@@ -8,7 +8,10 @@
   },
   "author": "",
   "license": "ISC",
-  "dependencies": {},
+  "dependencies": {
+    "gmaps": "^0.4.22",
+    "googleapis": "^2.1.7"
+  },
   "devDependencies": {
     "bower-files": "^3.11.3",
     "browser-sync": "^2.11.1",
