@@ -8,7 +8,7 @@ var markers = [];
 
 var getMarkers = function (htmlId) {
   for (var index in htmlId) {
-    var geocode = new google.maps.Geocoder;
+    var geocode = new google.maps.Geocoder();
     geocode.geocode(
       {
         address: $('#' + htmlId[index]).val()
@@ -24,15 +24,15 @@ var getMarkers = function (htmlId) {
         bounds.extend(marker.position);
       }
       map.fitBounds(bounds);
-    }
+    };
   }
-}
+};
 
 var clearMarkers = function() {
   for (var i in markers) {
     markers[i].setMap(null);
   }
-}
+};
 
 var currentLocation = function () {
   if (navigator.geolocation) {
@@ -51,7 +51,24 @@ var currentLocation = function () {
     }, function() {
     });
   }
-}
+};
+
+var getDirection = function() {
+  var theRout = new google.maps.DirectionsService();
+  theRout.route(
+  origin:  markers[0].position,//| String | google.maps.Place,
+  destination: markers[1].position; //| String | google.maps.Place,
+//   travelMode: google.maps.TravelMode.DRIVING,
+// //   transitOptions: {
+// //   arrivalTime: Date,
+// //   departureTime: Date,
+// //   modes[]: TransitMode,
+// //   routingPreference: TransitRoutePreference
+// // },
+//   provideRouteAlternatives: true,
+//   avoidHighways: false,
+//   avoidTolls: false;
+)};
 
 // Gmaps code needs to be in $(document).ready format in order to load properly
 $(function () {
@@ -63,6 +80,7 @@ $(function () {
   });
 
   $("#current-location-btn").click(function() {
+    debugger;
     currentLocation();
   });
 
@@ -71,7 +89,7 @@ $(function () {
     event.preventDefault();
     // for (map.markers)
     getMarkers(["address"]);
-  })
+  });
 
   $(".map-destination").submit(function(event){
     event.preventDefault();
@@ -96,9 +114,9 @@ $(function () {
     function callback(response, status) {
       getMarkers(["origin", "destination"]);
       $('#destination-result').append('<p><em>Destination: </em>' + response.destinationAddresses + '<br><em>Trip Length: </em>' + response.rows[0].elements[0].duration.text + '<br><em>Trip Distance: </em>' + response.rows[0].elements[0].distance.text + '</p>');
-      console.log(response.rows[0].elements[0].duration.text)
+      console.log(response.rows[0].elements[0].duration.text);
     }
-
+    getDirection();
   });
 
 });
