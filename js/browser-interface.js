@@ -5,28 +5,69 @@ var KEY = "e0aa4703629c3d46bd310eee601b23ff";
 
 // Gmaps code needs to be in $(document).ready format in order to load properly
 $(function () {
-  var map = new GMaps({
-    div: '#map',
-    lat: -12.043333,
-    lng: -77.028333
+
+  var map;
+  var myLatLng = {lat: -25.363, lng: 131.044};
+
+  map = new google.maps.Map(document.getElementById('map'), {
+    center: myLatLng,
+    zoom: 8
   });
+
+  // var marker = new google.maps.Marker({
+  //   position: myLatLng,
+  //   map: map,
+  //   title: 'Hello World!'
+  // });
+
   $(".map-location").submit(function(event){
     event.preventDefault();
-    GMaps.geocode({
-      address: $('#address').val(),
-      callback: function(results, status) {
-        if (status == 'OK') {
-          var latlng = results[0].geometry.location;
-          map.setCenter(latlng.lat(), latlng.lng());
-          map.removeMarkers();
-          map.addMarker({
-            lat: latlng.lat(),
-            lng: latlng.lng()
+    map.removeMarkers();
+
+    var geocode = new google.maps.Geocoder;
+    geocode.geocode(
+      {
+        address: $('#address').val()
+      }, callback);
+
+      function callback(response, status) {
+        // console.log(response[0].geometry.location.lat());
+        for (var i in response) {
+          var myLatLng = {lat: response[i].geometry.location.lat(), lng: response[i].geometry.location.lng()};
+          debugger;
+          var marker = new google.maps.Marker({
+            position: myLatLng,
+            map: map,
+            title: 'Hello World!'
           });
         }
       }
-    });
-  });
+
+  })
+
+
+  // var map = new GMaps({
+  //   div: '#map',
+  //   lat: -12.043333,
+  //   lng: -77.028333
+  // });
+  // $(".map-location").submit(function(event){
+  //   event.preventDefault();
+  //   GMaps.geocode({
+  //     address: $('#address').val(),
+  //     callback: function(results, status) {
+  //       if (status == 'OK') {
+  //         var latlng = results[0].geometry.location;
+  //         map.setCenter(latlng.lat(), latlng.lng());
+  //         map.removeMarkers();
+  //         map.addMarker({
+  //           lat: latlng.lat(),
+  //           lng: latlng.lng()
+  //         });
+  //       }
+  //     }
+  //   });
+  // });
 
   $(".map-destination").submit(function(event){
     event.preventDefault();
@@ -59,9 +100,9 @@ $(function () {
       }, callback);
 
     function callback(response, status) {
-      console.log(JSON.stringify(response));
+      // console.log(JSON.stringify(response));
     }
-  
+
   });
 
 });
