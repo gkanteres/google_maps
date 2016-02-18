@@ -18,6 +18,8 @@ var getMarkers = function (htmlId) {
         var myLatLng = {lat: response[i].geometry.location.lat(), lng: response[i].geometry.location.lng()};
         var marker = new google.maps.Marker({
           position: myLatLng,
+          draggable: true,
+          animation: google.maps.Animation.DROP,
           map: map,
         });
         markers.push(marker);
@@ -43,11 +45,21 @@ var currentLocation = function () {
       };
       var marker = new google.maps.Marker({
         position: pos,
+        draggable: true,
+        animation: google.maps.Animation.DROP,
         map: map,
       });
+      marker.addListener('click', toggleBounce);
       markers.push(marker);
       map.setCenter(pos);
       map.setZoom(14);
+      function toggleBounce() {
+        if (marker.getAnimation() !== null) {
+          marker.setAnimation(null);
+        } else {
+          marker.setAnimation(google.maps.Animation.BOUNCE);
+        }
+      }
     }, function() {
     });
   }
@@ -55,20 +67,51 @@ var currentLocation = function () {
 
 var getDirection = function() {
   var theRout = new google.maps.DirectionsService();
-  theRout.route(
-  origin:  markers[0].position,//| String | google.maps.Place,
-  destination: markers[1].position; //| String | google.maps.Place,
-//   travelMode: google.maps.TravelMode.DRIVING,
-// //   transitOptions: {
-// //   arrivalTime: Date,
-// //   departureTime: Date,
-// //   modes[]: TransitMode,
-// //   routingPreference: TransitRoutePreference
-// // },
-//   provideRouteAlternatives: true,
-//   avoidHighways: false,
-//   avoidTolls: false;
-)};
+  theRout.route({
+    origin: $("#origin").val(),
+    destination: $("#destination").val(),//markers[1].position | String | google.maps.Place,
+    // console.log(markers[0].position)
+    // console.log(markers[0])
+    travelMode: google.maps.TravelMode.DRIVING
+  //   transitOptions: {
+  //   arrivalTime: Date,
+  //   departureTime: Date,
+  //   modes[]: TransitMode,
+  //   routingPreference: TransitRoutePreference
+  // },
+  //   provideRouteAlternatives: true,
+  //   avoidHighways: false,
+  //   avoidTolls: false;
+}, callback);
+  function callback(response, status) {
+
+    getMarkers(["origin", "destination"]);
+    // $('#destination-result').append('<p><em>Destination: </em>' + response.destinationAddresses + '<br><em>Trip Length: </em>'
+    //                                 + response.rows[0].elements[0].duration.text + '<br><em>Trip Distance: </em>' + response.rows[0].elements[0].distance.text + '</p>');
+  }
+
+};
+
+var calcRoute = function() {
+  var directionsRender = new google.maps.DirectionsRenderer();
+  directionsRender.setMap(map);
+  directionsRender.setPanel(document.getElementById("directionsPanel"));
+  var directionsService = new google.maps.DirectionsService();
+  var start = document.getElementById("origin").value;
+  var end = document.getElementById("destination").value;
+  clearMarkers();
+  var request = {
+    origin:start,
+    destination:end,
+    travelMode: google.maps.TravelMode.DRIVING
+  };
+
+  directionsService.route(request, function(result, status) {
+    if (status == google.maps.DirectionsStatus.OK) {
+      directionsRender.setDirections(result);
+    }
+  });
+};
 
 // Gmaps code needs to be in $(document).ready format in order to load properly
 $(function () {
@@ -78,9 +121,9 @@ $(function () {
     center: myLatLng,
     zoom: 5
   });
+  currentLocation();
 
   $("#current-location-btn").click(function() {
-    debugger;
     currentLocation();
   });
 
@@ -113,10 +156,11 @@ $(function () {
 
     function callback(response, status) {
       getMarkers(["origin", "destination"]);
-      $('#destination-result').append('<p><em>Destination: </em>' + response.destinationAddresses + '<br><em>Trip Length: </em>' + response.rows[0].elements[0].duration.text + '<br><em>Trip Distance: </em>' + response.rows[0].elements[0].distance.text + '</p>');
-      console.log(response.rows[0].elements[0].duration.text);
+      $('#destination-result').append('<p><em>Destination: </em>' + response.destinationAddresses + '<br><em>Trip Length: </em>'
+                                      + response.rows[0].elements[0].duration.text + '<br><em>Trip Distance: </em>' + response.rows[0].elements[0].distance.text + '</p>');
     }
     getDirection();
+    calcRoute();
   });
 
 });
