@@ -4,6 +4,7 @@ var KEY = "e0aa4703629c3d46bd310eee601b23ff";
 var map;
 var myLatLng = {lat: -25.363, lng: 131.044};
 var bounds = new google.maps.LatLngBounds();
+var markers = [];
 
 var getMarkers = function (htmlId) {
   for (var index in htmlId) {
@@ -18,12 +19,37 @@ var getMarkers = function (htmlId) {
         var marker = new google.maps.Marker({
           position: myLatLng,
           map: map,
-          title: 'Hello World!'
         });
+        markers.push(marker);
         bounds.extend(marker.position);
       }
       map.fitBounds(bounds);
     }
+  }
+}
+
+var clearMarkers = function() {
+  for (var i in markers) {
+    markers[i].setMap(null);
+  }
+}
+
+var currentLocation = function () {
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(function(position) {
+      var pos = {
+        lat: position.coords.latitude,
+        lng: position.coords.longitude
+      };
+      var marker = new google.maps.Marker({
+        position: pos,
+        map: map,
+      });
+      markers.push(marker);
+      map.setCenter(pos);
+      map.setZoom(14);
+    }, function() {
+    });
   }
 }
 
@@ -37,57 +63,13 @@ $(function () {
   });
 
   $("#current-location-btn").click(function() {
-    debugger;
-    var infoWindow = new google.maps.InfoWindow({map: map});
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(function(position) {
-        var pos = {
-          lat: position.coords.latitude,
-          lng: position.coords.longitude
-        };
-
-        infoWindow.setPosition(pos);
-        infoWindow.setContent('Location found.');
-        map.setCenter(pos);
-        }, function() {
-          handleLocationError(true, infoWindow, map.getCenter());
-        });
-      } else {
-      // Browser doesn't support Geolocation
-      handleLocationError(false, infoWindow, map.getCenter());
-      }
+    currentLocation();
   });
 
-//   var infoWindow = new google.maps.InfoWindow({map: map});
-//
-//   if (navigator.geolocation) {
-//     navigator.geolocation.getCurrentPosition(function(position) {
-//       var pos = {
-//         lat: position.coords.latitude,
-//         lng: position.coords.longitude
-//       };
-//
-//       infoWindow.setPosition(pos);
-//       infoWindow.setContent('Location found.');
-//       map.setCenter(pos);
-//     }, function() {
-//       handleLocationError(true, infoWindow, map.getCenter());
-//     });
-//   } else {
-//     // Browser doesn't support Geolocation
-//     handleLocationError(false, infoWindow, map.getCenter());
-//   }
-//
-// function handleLocationError(browserHasGeolocation, infoWindow, pos) {
-//   infoWindow.setPosition(pos);
-//   infoWindow.setContent(browserHasGeolocation ?
-//                         'Error: The Geolocation service failed.' :
-//                         'Error: Your browser doesn\'t support geolocation.');
-// };
-
-
   $(".map-location").submit(function(event){
+    clearMarkers();
     event.preventDefault();
+    // for (map.markers)
     getMarkers(["address"]);
   })
 
