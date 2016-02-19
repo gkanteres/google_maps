@@ -5,6 +5,7 @@ var map;
 var myLatLng = {lat: -25.363, lng: 131.044};
 var bounds = new google.maps.LatLngBounds();
 var markers = [];
+var waypts = [];
 
 var getMarkers = function (htmlId) {
   for (var index in htmlId) {
@@ -65,6 +66,15 @@ var currentLocation = function () {
   }
 };
 
+var placeMarkerAndPanTo = function(latLng, map) {
+  var marker = new google.maps.Marker({
+    position: latLng,
+    map: map
+  });
+  markers.push(marker);
+  //map.panTo(latLng)
+}
+
 var getDirection = function() {
   var theRout = new google.maps.DirectionsService();
   theRout.route({
@@ -84,12 +94,8 @@ var getDirection = function() {
   //   avoidTolls: false;
 }, callback);
   function callback(response, status) {
-
     getMarkers(["origin", "destination"]);
-    // $('#destination-result').append('<p><em>Destination: </em>' + response.destinationAddresses + '<br><em>Trip Length: </em>'
-    //                                 + response.rows[0].elements[0].duration.text + '<br><em>Trip Distance: </em>' + response.rows[0].elements[0].distance.text + '</p>');
   }
-
 };
 
 var calcRoute = function() {
@@ -103,7 +109,8 @@ var calcRoute = function() {
   var request = {
     origin:start,
     destination:end,
-    travelMode: google.maps.TravelMode.DRIVING
+    travelMode: google.maps.TravelMode.DRIVING,
+    waypoints: waypts
   };
 
   directionsService.route(request, function(result, status) {
@@ -112,6 +119,18 @@ var calcRoute = function() {
     }
   });
 };
+
+var getMultipleDirection = function() {
+  debugger;
+  if (markers.length > 2) {
+    for (var i = 0; i < markers.length; i++) {
+      if ((i !== 0) && (i !== markers.length)) {
+        waypts.push({lat: markers[i].position.lat(), lng: markers[i].position.lng()});
+      }
+    }
+  }
+  calcRoute();
+}
 
 // Gmaps code needs to be in $(document).ready format in order to load properly
 $(function () {
@@ -125,6 +144,14 @@ $(function () {
 
   $("#current-location-btn").click(function() {
     currentLocation();
+  });
+
+  $("#multiple-route").click(function() {
+    getMultipleDirection();
+  });
+
+  $("#clear-btn").click(function() {
+    clearMarkers();
   });
 
   $(".map-location").submit(function(event){
@@ -161,6 +188,10 @@ $(function () {
     }
     getDirection();
     calcRoute();
+  });
+
+  map.addListener('click', function(e) {
+    placeMarkerAndPanTo(e.latLng, map);
   });
 
 });
